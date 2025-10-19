@@ -5,13 +5,15 @@ import Home from "./Pages/home";
 import CreatePitch from "./Pages/CreatePitch";
 import PitchResult from "./Pages/PitchResult";
 import Footer from "./Components/Footer";
+import LandingPage from "./Pages/mains";
 
 export default function App() {
   return (
     <Router>
       <Routes>
         {/* Auth Pages */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/Login" element={<Login />} />
+            <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<Signup />} />
 
         {/* Main Pages */}

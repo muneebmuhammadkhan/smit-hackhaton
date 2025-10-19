@@ -17,7 +17,7 @@ export default function CreatePitch() {
   };
 
   // ✅ Gemini API key
-  const GEMINI_API_KEY = "sk-5653763606ae4bf1b6298c24a3c90aa8";
+  const GEMINI_API_KEY = "AIzaSyDWb_n2r3xXHs9-TP1_GeJ_qZeAojawYPY";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
