@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaRegPaperPlane } from "react-icons/fa";
+
+export default function CreatePitch() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    idea: "",
+    description: "",
+    industry: "",
+    length: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // ✅ Gemini API key
+  const GEMINI_API_KEY = "sk-5653763606ae4bf1b6298c24a3c90aa8";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const prompt = `
+    Generate a professional startup pitch for the following idea:
+    Idea: ${form.idea}
+    Description: ${form.description}
+    Industry: ${form.industry}
+    Pitch Length: ${form.length}
+
+    Include the following sections:
+    1. Startup Name + Tagline
+    2. Elevator Pitch (2–3 lines)
+    3. Problem and Solution
+    4. Target Audience Persona
+    5. Landing Page Content
+    `;
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: prompt }],
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const pitchText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "No response from Gemini API.";
+
+      // ✅ Send data to Result Page
+      navigate("/pitch-result", {
+        state: {
+          result: pitchText,
+          idea: form.idea,
+          industry: form.industry,
+          length: form.length,
+        },
+      });
+    } catch (error) {
+      console.error("Error generating pitch:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-gray-950 flex flex-col items-center text-gray-100">
+      {/* Header */}
+      <nav className="w-full bg-black/50 shadow-lg px-6 py-4 flex justify-between items-center border-b border-gray-800 backdrop-blur-md">
+        <h2 className="text-4xl font-bold text-green-500">PitchCraft</h2>
+        <button
+          onClick={() => navigate("/home")}
+          className="text-base font-semibold text-green-400 hover:text-green-300 transition"
+        >
+          Home
+        </button>
+      </nav>
+
+      {/* Form */}
+      <div className="bg-neutral-900 mt-10 shadow-2xl rounded-xl w-full max-w-xl p-8 border border-gray-800">
+        <h1 className="text-3xl font-bold text-gray-100 mb-6 text-center">
+          Create Pitch and Get Response & Suggestions for Your Startup
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-gray-300 font-medium mb-2">
+              Your Idea
+            </label>
+            <input
+              type="text"
+              name="idea"
+              value={form.idea}
+              onChange={handleChange}
+              placeholder="e.g. A software development company."
+              required
+              className="w-full px-4 py-3 border border-gray-700 bg-gray-800 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 font-medium mb-2">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Give a little detail about your idea."
+              rows="3"
+              required
+              className="w-full px-4 py-3 border border-gray-700 bg-gray-800 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            ></textarea>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 font-medium mb-2">
+              Field / Industry
+            </label>
+            <select
+              name="industry"
+              value={form.industry}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-700 bg-gray-800 text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            >
+              <option value="">Select Field / Industry</option>
+              <option>Information Technology</option>
+              <option>Health</option>
+              <option>Finance & Economy</option>
+              <option>Education</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 font-medium mb-2">
+              Response Size
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer text-gray-300">
+                <input
+                  type="radio"
+                  name="length"
+                  value="short"
+                  checked={form.length === "short"}
+                  onChange={handleChange}
+                  className="accent-green-500"
+                  required
+                />
+                <span>Short</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-gray-300">
+                <input
+                  type="radio"
+                  name="length"
+                  value="long"
+                  checked={form.length === "long"}
+                  onChange={handleChange}
+                  className="accent-green-500"
+                />
+                <span>Detailed</span>
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-500 hover:bg-green-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-md"
+          >
+            {loading ? "Generating..." : <><FaRegPaperPlane /> Generate</>}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
